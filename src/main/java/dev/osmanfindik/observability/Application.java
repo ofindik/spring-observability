@@ -4,6 +4,7 @@ import dev.osmanfindik.observability.post.JsonPlaceholderService;
 import dev.osmanfindik.observability.post.Post;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.observation.annotation.Observed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -34,15 +35,10 @@ public class Application {
 	}
 
 	@Bean
-	CommandLineRunner commandLineRunner (JsonPlaceholderService jsonPlaceholderService, ObservationRegistry observationRegistry) {
+	@Observed (name = "post.load-all-posts", contextualName = "post.find-all")
+	CommandLineRunner commandLineRunner (JsonPlaceholderService jsonPlaceholderService) {
 		return args -> {
-			Observation.createNotStarted ("posts.load-all-posts", observationRegistry)
-					.lowCardinalityKeyValue ("author", "Osman Fındık")
-					.contextualName ("post.load-all-posts")
-					.observe (() -> {
-						List<Post> postList = jsonPlaceholderService.findAll ();
-						logger.info ("All Posts: {}", postList);
-					});
+			jsonPlaceholderService.findAll ();
 		};
 	}
 }
